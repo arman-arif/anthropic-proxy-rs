@@ -12,7 +12,7 @@ use axum::{
 use clap::Parser;
 use cli::{Cli, Command};
 use config::Config;
-use daemonize::Daemonize;
+use daemonize_me::Daemon;
 use reqwest::Client;
 use std::sync::Arc;
 use tower_http::{
@@ -50,14 +50,14 @@ fn main() -> anyhow::Result<()> {
             .append(true)
             .open("/tmp/anthropic-proxy.log")?;
 
-        let daemonize = Daemonize::new()
-            .pid_file(&cli.pid_file)
-            .working_directory(std::env::current_dir()?)
+        let daemon = Daemon::new()
+            .pid_file(&cli.pid_file, None)
+            .work_dir(std::env::current_dir()?)
             .stdout(stdout)
             .stderr(stderr)
-            .umask(0o027);
+            .umask(0o027u16);
 
-        match daemonize.start() {
+        match daemon.start() {
             Ok(_) => {}
             Err(e) => {
                 eprintln!("✗ Failed to daemonize: {}", e);
